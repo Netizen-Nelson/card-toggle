@@ -749,6 +749,28 @@ class CardToggle extends HTMLElement {
     }
 
     /* 啟動 auto-flip 倒數，並注入倒數條 */
+    /* 將 color 名稱解析為對應的 CSS 顏色值 */
+    _resolveColor(name) {
+        const map = {
+            shell:     'var(--ct-color-shell)',
+            lavender:  'var(--ct-color-lavender)',
+            special:   'var(--ct-color-special)',
+            warning:   'var(--ct-color-warning)',
+            salmon:    'var(--ct-color-salmon)',
+            attention: 'var(--ct-color-attention)',
+            sky:       'var(--ct-color-sky)',
+            safe:      'var(--ct-color-safe)',
+            brown:     'var(--ct-color-brown)',
+            info:      'var(--ct-color-info)',
+            pink:      'var(--ct-color-pink)',
+            orange:    'var(--ct-color-orange)',
+            stone:     'var(--ct-color-stone)',
+        };
+        if (!name) return null;
+        // 若是已知名稱就取 CSS var；否則當作直接色彩值（hex / rgb 等）
+        return map[name] || name;
+    }
+
     _startAutoFlip(ms) {
         // 清除舊計時器
         if (this._autoFlipTimer) clearTimeout(this._autoFlipTimer);
@@ -762,6 +784,20 @@ class CardToggle extends HTMLElement {
         const inner = document.createElement('div');
         inner.className = 'ct-countdown-inner';
         inner.style.animationDuration = ms + 'ms';
+
+        // 倒數條顏色優先順序：
+        //   1. flip-bar-color 屬性（明確指定）
+        //   2. color-after 屬性（翻面後顏色）
+        //   3. color 屬性（正面顏色）
+        //   4. 預設 sky
+        const barColorName =
+            this.getAttribute('flip-bar-color') ||
+            this.getAttribute('color-after')    ||
+            this.getAttribute('color')          ||
+            'sky';
+        const barColor = this._resolveColor(barColorName);
+        if (barColor) inner.style.backgroundColor = barColor;
+
         bar.appendChild(inner);
         this.appendChild(bar);
 
