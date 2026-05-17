@@ -2,18 +2,31 @@ class CardToggle extends HTMLElement {
     constructor() {
         super();
         this._originalContent = '';
-        this._attempts = 0;
-        this._inputId = '';
+        this._originalColor   = null;
+        this._attempts        = 0;
+        this._inputId         = '';
+        this._autoFlipTimer   = null;
+        this._isFlipped       = false;
+        this._clickBound      = false;
+        this._snapshotTaken   = false;
     }
 
     connectedCallback() {
-        this._originalContent = this.innerHTML;
-        
+        this._originalColor = this.getAttribute('color') || null;
+
         if (!document.getElementById('card-toggle-styles')) {
             this._injectStyles();
         }
-        
+
         this._initialize();
+    }
+
+    /* 取得正面快照（第一次點擊前呼叫，此時 DOM 一定已完整解析） */
+    _takeSnapshot() {
+        if (!this._snapshotTaken) {
+            this._originalContent = this.innerHTML;
+            this._snapshotTaken   = true;
+        }
     }
 
     _injectStyles() {
@@ -79,12 +92,12 @@ class CardToggle extends HTMLElement {
                 cursor: default;
             }
 
-            card-toggle[replaced]:hover {
+            card-toggle[replaced]:not([toggle]):hover {
                 background-color: var(--ct-bg-secondary);
                 transform: none;
             }
 
-            card-toggle[replaced]::before {
+            card-toggle[replaced]:not([toggle])::before {
                 width: 4px;
             }
 
@@ -470,13 +483,60 @@ class CardToggle extends HTMLElement {
                 color: var(--ct-color-lavender);
                 animation: ct-fade-in 0.3s ease;
             }
+
+            /* auto-flip 倒數進度條 */
+            .ct-countdown-bar {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background-color: rgba(198, 199, 189, 0.1);
+                border-radius: 0 0 8px 8px;
+                overflow: hidden;
+            }
+
+            .ct-countdown-inner {
+                height: 100%;
+                width: 100%;
+                background-color: var(--ct-color-sky);
+                transform-origin: left center;
+                animation: ct-countdown linear forwards;
+            }
+
+            @keyframes ct-countdown {
+                from { transform: scaleX(1); }
+                to   { transform: scaleX(0); }
+            }
+
+            /* toggle 模式：背面的「點擊翻回」提示標籤 */
+            .ct-toggle-hint {
+                display: inline-block;
+                margin-top: 10px;
+                font-size: 0.8rem;
+                color: var(--ct-color-stone);
+                opacity: 0.75;
+                user-select: none;
+            }
+
+            .ct-toggle-hint i {
+                margin-right: 4px;
+            }
+
+            /* toggle 模式背面 hover 效果 */
+            card-toggle[replaced][toggle]:hover {
+                background-color: rgba(198, 199, 189, 0.06);
+                cursor: pointer;
+            }
         `;
         document.head.appendChild(style);
     }
 
     _initialize() {
-        if (!this.hasAttribute('replaced')) {
+        // 統一綁定一個 click handler（toggle 模式需要在 replaced 狀態也能點擊）
+        if (!this._clickBound) {
             this.addEventListener('click', (event) => this._handleClick(event));
+            this._clickBound = true;
         }
 
         if (this.hasAttribute('number')) {
@@ -500,6 +560,21 @@ class CardToggle extends HTMLElement {
     }
 
     _handleClick(event) {
+        // 第一次點擊時才取快照，此時子節點一定已完整解析
+        this._takeSnapshot();
+
+        const isToggleMode = this.hasAttribute('toggle');
+
+        // toggle 模式：已翻到背面時，點擊可翻回正面
+        if (this.hasAttribute('replaced') && isToggleMode) {
+            const target = event.target;
+            const interactiveElements = ['INPUT', 'BUTTON', 'TEXTAREA', 'SELECT', 'A'];
+            if (interactiveElements.includes(target.tagName)) return;
+            if (target.closest('input, button, textarea, select, a')) return;
+            this._flipBack();
+            return;
+        }
+
         if (this.hasAttribute('replaced')) {
             return;
         }
@@ -616,16 +691,35 @@ class CardToggle extends HTMLElement {
 
     _replace(content, animation) {
         const colorAfter = this.getAttribute('color-after');
-        
+        const autoFlip  = this.getAttribute('auto-flip');   // ms，例如 "3000"
+        const isToggle  = this.hasAttribute('toggle');
+
+        const afterReplace = () => {
+            this._isFlipped = true;
+            if (colorAfter) this.setAttribute('color', colorAfter);
+
+            // toggle 模式：背面仍可點擊，改為 pointer 並顯示提示
+            if (isToggle) {
+                this.style.cursor = 'pointer';
+                this._injectToggleHint();
+            }
+
+            // auto-flip：倒數後翻回
+            if (autoFlip) {
+                const ms = parseInt(autoFlip);
+                if (!isNaN(ms) && ms > 0) {
+                    this._startAutoFlip(ms);
+                }
+            }
+        };
+
         if (animation === 'fade') {
             this.style.opacity = '0';
             setTimeout(() => {
                 this.innerHTML = content;
                 this.setAttribute('replaced', '');
-                if (colorAfter) {
-                    this.setAttribute('color', colorAfter);
-                }
                 this.style.opacity = '1';
+                afterReplace();
             }, 300);
         } else if (animation === 'slide') {
             this.style.transform = 'translateX(-20px)';
@@ -633,19 +727,94 @@ class CardToggle extends HTMLElement {
             setTimeout(() => {
                 this.innerHTML = content;
                 this.setAttribute('replaced', '');
-                if (colorAfter) {
-                    this.setAttribute('color', colorAfter);
-                }
                 this.style.transform = 'translateX(0)';
                 this.style.opacity = '1';
+                afterReplace();
             }, 300);
         } else {
             this.innerHTML = content;
             this.setAttribute('replaced', '');
-            if (colorAfter) {
-                this.setAttribute('color', colorAfter);
-            }
+            afterReplace();
         }
+    }
+
+    /* 注入「點擊翻回」提示標籤 */
+    _injectToggleHint() {
+        const existing = this.querySelector('.ct-toggle-hint');
+        if (existing) return;
+        const hint = document.createElement('div');
+        hint.className = 'ct-toggle-hint';
+        hint.innerHTML = '<i class="bi bi-arrow-repeat"></i> 點擊翻回';
+        this.appendChild(hint);
+    }
+
+    /* 啟動 auto-flip 倒數，並注入倒數條 */
+    _startAutoFlip(ms) {
+        // 清除舊計時器
+        if (this._autoFlipTimer) clearTimeout(this._autoFlipTimer);
+
+        // 插入倒數進度條
+        const existing = this.querySelector('.ct-countdown-bar');
+        if (existing) existing.remove();
+
+        const bar = document.createElement('div');
+        bar.className = 'ct-countdown-bar';
+        const inner = document.createElement('div');
+        inner.className = 'ct-countdown-inner';
+        inner.style.animationDuration = ms + 'ms';
+        bar.appendChild(inner);
+        this.appendChild(bar);
+
+        this._autoFlipTimer = setTimeout(() => {
+            this._flipBack();
+        }, ms);
+    }
+
+    /* 翻回正面 */
+    _flipBack() {
+        if (this._autoFlipTimer) {
+            clearTimeout(this._autoFlipTimer);
+            this._autoFlipTimer = null;
+        }
+
+        const animation = this.getAttribute('animation') || 'fade';
+        const originalColor = this._originalColor || null;
+
+        if (animation === 'fade') {
+            this.style.opacity = '0';
+            setTimeout(() => {
+                this._restoreFront(originalColor);
+                this.style.opacity = '1';
+            }, 300);
+        } else if (animation === 'slide') {
+            this.style.transform = 'translateX(20px)';
+            this.style.opacity = '0';
+            setTimeout(() => {
+                this._restoreFront(originalColor);
+                this.style.transform = 'translateX(0)';
+                this.style.opacity = '1';
+            }, 300);
+        } else {
+            this._restoreFront(originalColor);
+        }
+    }
+
+    _restoreFront(originalColor) {
+        this.innerHTML = this._originalContent;
+        this.removeAttribute('replaced');
+        this._isFlipped = false;
+        this._attempts = 0;
+        this.style.cursor = '';
+
+        // 恢復原始 color
+        if (originalColor) {
+            this.setAttribute('color', originalColor);
+        } else {
+            this.removeAttribute('color');
+        }
+
+        // 重設快照旗標，讓下次翻面前重新記錄正確內容
+        this._originalContent = this.innerHTML;
     }
 
     _verifyAnswer() {
@@ -768,10 +937,26 @@ class CardToggle extends HTMLElement {
                 targetElement.innerHTML = '';
             }
         }
+
+        if (this._autoFlipTimer) {
+            clearTimeout(this._autoFlipTimer);
+            this._autoFlipTimer = null;
+        }
         
         this.innerHTML = this._originalContent;
         this.removeAttribute('replaced');
+        this._isFlipped = false;
         this._attempts = 0;
+        this.style.cursor = '';
+
+        // 快照與 color 同步
+        this._originalContent = this.innerHTML;
+        if (this._originalColor) {
+            this.setAttribute('color', this._originalColor);
+        } else {
+            this.removeAttribute('color');
+        }
+
         this._initialize();
     }
 }
