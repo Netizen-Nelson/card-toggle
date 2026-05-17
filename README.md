@@ -1,12 +1,78 @@
 # card-toggle + CardToggle.php
 
-> An interactive card component with click-to-reveal, quiz mode, and group carousel,  
+> An interactive card component with click-to-reveal, quiz mode, and group carousel,
 > paired with a PHP class that renders directly from database data.
 
 ![No Dependencies](https://img.shields.io/badge/dependencies-Bootstrap_Icons_only-40c99a?style=flat-square)
 ![PHP](https://img.shields.io/badge/PHP-8.0%2B-C3A5E5?style=flat-square&logo=php)
 ![License](https://img.shields.io/badge/license-MIT-08a9d1?style=flat-square)
 ![Custom Elements](https://img.shields.io/badge/Web_Components-Custom_Elements-C8DD5A?style=flat-square)
+
+---
+
+## 🆕 What's New
+
+Three new attributes have been added to `<card-toggle>`.
+
+### `auto-flip="ms"`
+
+After the card is flipped to its back face, it automatically flips back to the front after the specified number of milliseconds. A countdown progress bar is shown at the bottom of the card during the wait.
+
+```html
+<!-- Flip back after 3 seconds -->
+<card-toggle content="Back content" auto-flip="3000" color="info">
+  Click me — flips back in 3 s
+</card-toggle>
+```
+
+### `toggle`
+
+Boolean attribute. When present, clicking anywhere on the back face flips the card back to the front. A subtle "↺ 點擊翻回" hint label appears on the back face.
+
+```html
+<card-toggle content="Back content" toggle color="lavender">
+  Click to flip — click back face to return
+</card-toggle>
+```
+
+### `flip-bar-color="name"`
+
+Sets the colour of the `auto-flip` countdown bar independently from the card colour. Accepts any built-in colour name or a raw CSS colour value (hex, rgb, etc.).
+
+**Colour resolution priority (highest → lowest):**
+
+```
+flip-bar-color  →  color-after  →  color  →  sky (default)
+```
+
+```html
+<!-- Bar colour follows color-after automatically -->
+<card-toggle auto-flip="4000" color-after="safe" content="Back">Front</card-toggle>
+
+<!-- Bar colour explicitly overridden -->
+<card-toggle auto-flip="4000" color="lavender" flip-bar-color="warning" content="Back">Front</card-toggle>
+
+<!-- Raw CSS value also accepted -->
+<card-toggle auto-flip="4000" flip-bar-color="#ff6600" content="Back">Front</card-toggle>
+```
+
+### Combining `auto-flip` and `toggle`
+
+Both attributes can be used together. While the countdown is running, clicking the back face cancels the timer and flips back immediately.
+
+```html
+<card-toggle
+  content="Back content"
+  auto-flip="5000"
+  toggle
+  color="safe">
+  5 s auto-flip, or click back face to return early
+</card-toggle>
+```
+
+### Bug fix — blank front face after flip-back
+
+The front-face snapshot is now taken **lazily on first click** (instead of in `connectedCallback`), guaranteeing that child nodes are fully parsed in all browsers (including Firefox and Safari) before the snapshot is recorded. The front face will no longer appear blank after flipping back.
 
 ---
 
@@ -22,7 +88,7 @@ interactive elements. Three modes are supported:
 The companion **CardToggle.php** class renders card markup directly from PHP variables
 or database query results, handling ID generation and HTML escaping automatically.
 
-> Requires [Bootstrap Icons](https://icons.getbootstrap.com/) for button icons in quiz mode.  
+> Requires [Bootstrap Icons](https://icons.getbootstrap.com/) for button icons in quiz mode.
 > Optimised for desktop / widescreen layouts.
 
 ---
@@ -40,16 +106,17 @@ your-project/
 
 ## Table of Contents
 
-1. [Quick Start](#quick-start)
-2. [HTML Usage](#html-usage)
+1. [What's New](#-whats-new)
+2. [Quick Start](#quick-start)
+3. [HTML Usage](#html-usage)
    - [Reveal mode](#reveal-mode)
    - [Quiz mode](#quiz-mode)
    - [Group](#group)
-3. [PHP Class Usage](#php-class-usage)
-4. [Colors](#colors)
-5. [Options Reference](#options-reference)
-6. [Escape & Newline Handling](#escape--newline-handling)
-7. [License](#license)
+4. [PHP Class Usage](#php-class-usage)
+5. [Colors](#colors)
+6. [Options Reference](#options-reference)
+7. [Escape & Newline Handling](#escape--newline-handling)
+8. [License](#license)
 
 ---
 
@@ -132,7 +199,7 @@ Three ways to provide content — choose one per card.
 
 ### Quiz mode
 
-Add the `question` attribute to activate quiz mode.  
+Add the `question` attribute to activate quiz mode.
 Click the card to show an input field. The component validates the answer and shows feedback.
 
 ```html
@@ -172,7 +239,7 @@ Wrap cards in `<card-toggle-group>` for coordinated layout and navigation.
 
 ```html
 <card-toggle-group mode="stack" theme="sky">
-  <card-toggle color="sky" source="step-1">Step 1 確認病患身分</card-toggle>
+  <card-toggle color="sky"  source="step-1">Step 1 確認病患身分</card-toggle>
   <card-toggle color="info" source="step-2">Step 2 評估生命徵象</card-toggle>
   <card-toggle color="safe" source="step-3">Step 3 執行醫囑</card-toggle>
 </card-toggle-group>
@@ -224,7 +291,7 @@ echo CardToggle::revealText(
 
 ### `CardToggle::revealArray()`
 
-Pass a DB row directly. Each key becomes a label; each value is auto-escaped.  
+Pass a DB row directly. Each key becomes a label; each value is auto-escaped.
 Outputs a definition-list layout — no HTML assembly needed.
 
 ```php
@@ -234,7 +301,7 @@ echo CardToggle::revealArray(
         '部門'     => $emp['dept'],
         '職稱'     => $emp['title'],
         '到職日'   => $emp['hire_date'],
-        '藥物過敏' => $emp['allergy'],   // \n auto → <br>
+        '藥物過敏' => $emp['allergy'],
         '考核評等' => $emp['grade'],
     ],
     ['color' => 'lavender', 'animation' => 'fade']
@@ -251,9 +318,9 @@ Quiz mode. Answer and success content come from DB fields.
 $successHtml = '<p>正確！標準劑量：' . htmlspecialchars($drug['dosage'], ENT_QUOTES, 'UTF-8') . '</p>';
 
 echo CardToggle::quiz(
-    $drug['name'] . ' 的最大單次劑量是多少 mg？',   // question (shown on card + input)
-    $drug['max_single'],                             // correct answer from DB
-    $successHtml,                                    // shown after correct answer
+    $drug['name'] . ' 的最大單次劑量是多少 mg？',
+    $drug['max_single'],
+    $successHtml,
     [
         'color'         => 'warning',
         'max_attempts'  => 3,
@@ -290,13 +357,13 @@ Wrap multiple cards in a group container.
 
 ```php
 echo CardToggle::groupOpen([
-    'mode'             => 'slide',   // stack | slide
-    'theme'            => 'warning', // nav button active colour
-    'show_pages'       => true,      // show page number buttons
-    'hide_nav_buttons' => false,     // hide prev/next buttons
+    'mode'             => 'slide',
+    'theme'            => 'warning',
+    'show_pages'       => true,
+    'hide_nav_buttons' => false,
 ]);
 
-foreach ($questions as $i => $q) {
+foreach ($questions as $q) {
     echo CardToggle::quiz($q['question'], $q['answer'], '', [
         'color'     => 'warning',
         'auto_next' => true,
@@ -321,8 +388,8 @@ echo CardToggle::script('/assets/card-toggle.js');
 
 ## Colors
 
-Set via `color` attribute (HTML) or `'color'` option (PHP).  
-Also used for `color-after` / `color_after` and `success-color` / `success_color`.
+Set via `color` attribute (HTML) or `'color'` option (PHP).
+Also used for `color-after` / `color_after`, `success-color` / `success_color`, and `flip-bar-color` / `flip_bar_color`.
 
 | Name | Hex |
 |---|---|
@@ -378,6 +445,9 @@ tinted with the active colour.
 | `success-source` | element id | — | Clone element shown after correct answer |
 | `success-color` | colour name | `safe` | Accent bar colour after correct answer |
 | `auto-next` | boolean attr | — | Auto-advance group to next card after correct answer |
+| `auto-flip` 🆕 | ms (integer) | — | Flip back to front after N milliseconds; shows countdown bar |
+| `toggle` 🆕 | boolean attr | — | Allow clicking back face to flip back to front |
+| `flip-bar-color` 🆕 | colour name / CSS value | auto | Countdown bar colour; defaults to `color-after` → `color` → `sky` |
 
 ### `<card-toggle-group>` attributes
 
@@ -420,6 +490,9 @@ PHP option keys use underscores where HTML attributes use hyphens.
 | `auto_next` | `auto-next` | bool | `false` |
 | `escape` | — | bool | method-dependent |
 | `class` | `class` | string | — |
+| `auto_flip` 🆕 | `auto-flip` | int (ms) | — |
+| `toggle` 🆕 | `toggle` | bool | `false` |
+| `flip_bar_color` 🆕 | `flip-bar-color` | string | auto |
 
 ---
 
@@ -433,7 +506,7 @@ PHP option keys use underscores where HTML attributes use hyphens.
 | `quiz()` | `false` | manual | Question and success content from DB |
 | `card()` | `false` | manual | Static display card |
 
-> **Security note:**  
+> **Security note:**
 > When assembling HTML manually for `reveal()`, `quiz()`, or `card()`,
 > always escape untrusted field values:
 > ```php

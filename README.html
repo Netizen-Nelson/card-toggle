@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>card-toggle — README</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+  :root {
+    --bg:        #0c0d0c;
+    --bg2:       #111311;
+    --bg3:       #161816;
+    --shell:     #c6c7bd;
+    --lavender:  #C3A5E5;
+    --special:   #C8DD5A;
+    --warning:   #F08080;
+    --salmon:    #E5C3B3;
+    --sky:       #08a9d1;
+    --safe:      #40c99a;
+    --yellow:    #DECA4B;
+    --info:      #5fafed;
+    --stone:     #7090A8;
+    --pink:      #FFB3D9;
+    --orange:    #eda109;
+    --border:    rgba(198,199,189,0.1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--shell);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 1rem;
+    line-height: 1.85;
+    padding: 0 0 80px;
+  }
+
+  /* ── 頂部橫幅 ── */
+  .hero {
+    background: linear-gradient(135deg, #111411 0%, #0e0f12 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 40px 36px;
+  }
+  .hero h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--special);
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .hero p {
+    color: var(--stone);
+    font-size: 1rem;
+    margin-bottom: 20px;
+  }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 0.78rem; font-weight: 600; white-space: nowrap;
+  }
+  .badge-safe     { background: rgba(64,201,154,.15);  color: var(--safe);    border: 1px solid rgba(64,201,154,.3); }
+  .badge-lavender { background: rgba(195,165,229,.15); color: var(--lavender);border: 1px solid rgba(195,165,229,.3); }
+  .badge-sky      { background: rgba(8,169,209,.15);   color: var(--sky);     border: 1px solid rgba(8,169,209,.3); }
+  .badge-special  { background: rgba(200,221,90,.15);  color: var(--special); border: 1px solid rgba(200,221,90,.3); }
+  .badge-new      { background: rgba(237,161,9,.18);   color: var(--orange);  border: 1px solid rgba(237,161,9,.35); }
+
+  /* ── 主體佈局 ── */
+  .layout { display: flex; align-items: flex-start; max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  /* ── 側邊目錄 ── */
+  .toc {
+    width: 210px; flex-shrink: 0;
+    position: sticky; top: 24px;
+    padding: 24px 0 24px 0;
+    margin-right: 40px;
+  }
+  .toc-title {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--stone);
+    margin-bottom: 12px; padding-left: 12px;
+  }
+  .toc a {
+    display: block; padding: 4px 12px;
+    font-size: 0.875rem; color: var(--stone);
+    text-decoration: none; border-left: 2px solid transparent;
+    transition: all .2s;
+    border-radius: 0 4px 4px 0;
+  }
+  .toc a:hover { color: var(--shell); border-left-color: var(--stone); background: rgba(198,199,189,.05); }
+  .toc a.new-item { color: var(--orange); }
+  .toc a.new-item:hover { border-left-color: var(--orange); }
+  .toc .toc-sep { height: 1px; background: var(--border); margin: 10px 12px; }
+
+  /* ── 主內容 ── */
+  main { flex: 1; min-width: 0; padding: 32px 0; }
+
+  /* ── New Features 區塊 ── */
+  .new-features {
+    border: 1px solid rgba(237,161,9,.35);
+    border-radius: 12px;
+    background: rgba(237,161,9,.04);
+    margin-bottom: 48px;
+    overflow: hidden;
+  }
+  .new-features-header {
+    background: rgba(237,161,9,.1);
+    padding: 16px 24px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid rgba(237,161,9,.25);
+  }
+  .new-features-header h2 {
+    font-size: 1.05rem; font-weight: 700;
+    color: var(--orange); letter-spacing: .02em;
+  }
+  .new-features-header .version-tag {
+    font-size: 0.75rem; font-weight: 700;
+    background: rgba(237,161,9,.2); color: var(--orange);
+    padding: 2px 8px; border-radius: 20px;
+    border: 1px solid rgba(237,161,9,.4);
+  }
+  .new-features-body { padding: 24px; }
+  .feature-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+  .feat-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+  }
+  .feat-card-name {
+    font-family: 'Consolas', 'SF Mono', monospace;
+    font-size: 0.9rem; font-weight: 700;
+    color: var(--special); margin-bottom: 6px;
+  }
+  .feat-card-desc { font-size: 0.88rem; color: var(--stone); line-height: 1.6; }
+
+  /* ── 一般段落 ── */
+  .section { margin-bottom: 48px; }
+  .section + .section { border-top: 1px solid var(--border); padding-top: 40px; }
+
+  h2.section-title {
+    font-size: 1.25rem; font-weight: 700;
+    color: var(--lavender); margin-bottom: 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  h2.section-title::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(to right, rgba(195,165,229,.3), transparent);
+  }
+  h3 {
+    font-size: 1rem; font-weight: 700;
+    color: var(--sky); margin: 24px 0 10px;
+  }
+  p { margin-bottom: 14px; }
+
+  /* ── code / pre ── */
+  code {
+    font-family: 'Consolas', 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.87em;
+    background: rgba(198,199,189,.08);
+    color: var(--special);
+    padding: 2px 6px; border-radius: 4px;
+  }
+  pre {
+    background: #0a0b0a;
+    border: 1px solid rgba(198,199,189,.12);
+    border-radius: 8px;
+    padding: 18px 22px;
+    overflow-x: auto;
+    font-family: 'Consolas', 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    margin-bottom: 18px;
+    color: var(--shell);
+  }
+  pre code { background: none; padding: 0; font-size: inherit; color: inherit; }
+
+  /* 語法色彩 */
+  .hl-tag    { color: #C8DD5A; }
+  .hl-attr   { color: #5fafed; }
+  .hl-val    { color: #40c99a; }
+  .hl-cmt    { color: #4a5568; font-style: italic; }
+  .hl-key    { color: #C3A5E5; }
+  .hl-str    { color: #E5C3B3; }
+
+  /* ── 表格 ── */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 18px; }
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  th {
+    background: rgba(198,199,189,.07);
+    color: var(--stone); font-weight: 600;
+    padding: 10px 14px; text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(198,199,189,.06);
+    vertical-align: top;
+  }
+  tr:hover td { background: rgba(198,199,189,.03); }
+  td code { font-size: 0.83em; }
+  .td-new { color: var(--orange); font-weight: 600; }
+
+  /* ── callout ── */
+  .callout {
+    border-radius: 8px; padding: 14px 18px;
+    font-size: 0.9rem; margin-bottom: 18px;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .callout i { margin-top: 2px; flex-shrink: 0; font-size: 1.1rem; }
+  .callout-info  { background: rgba(95,175,237,.08);  border: 1px solid rgba(95,175,237,.25);  color: var(--info); }
+  .callout-warn  { background: rgba(237,161,9,.08);   border: 1px solid rgba(237,161,9,.3);    color: var(--yellow); }
+  .callout-safe  { background: rgba(64,201,154,.08);  border: 1px solid rgba(64,201,154,.25);  color: var(--safe); }
+
+  /* ── 色彩色票 ── */
+  .color-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+  .color-chip {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 6px; padding: 7px 12px;
+    font-size: 0.82rem;
+  }
+  .chip-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── 優先順序示意 ── */
+  .priority-chain {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 0;
+    margin-bottom: 18px;
+  }
+  .priority-item {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 6px; padding: 7px 14px;
+    font-family: monospace; font-size: 0.85rem; color: var(--special);
+  }
+  .priority-arrow {
+    color: var(--stone); padding: 0 8px; font-size: 0.85rem;
+  }
+  .priority-default {
+    color: var(--stone); font-size: 0.82rem; padding: 7px 14px;
+  }
+
+  @media (max-width: 800px) {
+    .layout { flex-direction: column; padding: 0 16px; }
+    .toc { display: none; }
+    .feature-cards { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <h1>card-toggle <span style="color:var(--stone);font-weight:400;font-size:1.1rem">+ CardToggle.php</span></h1>
+  <p>互動式卡片元件，支援點擊揭露、測驗模式與群組輪播，附 PHP 渲染類別。</p>
+  <div class="badges">
+    <span class="badge badge-safe"><i class="bi bi-check-circle-fill"></i> No Dependencies (Bootstrap Icons only)</span>
+    <span class="badge badge-lavender"><i class="bi bi-filetype-php"></i> PHP 8.0+</span>
+    <span class="badge badge-sky"><i class="bi bi-puzzle-fill"></i> Custom Elements</span>
+    <span class="badge badge-special"><i class="bi bi-file-earmark-code"></i> MIT License</span>
+    <span class="badge badge-new"><i class="bi bi-stars"></i> auto-flip · toggle · flip-bar-color 新增</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- TOC -->
+  <nav class="toc">
+    <div class="toc-title">目錄</div>
+    <a href="#new-features" class="new-item"><i class="bi bi-stars"></i> 新功能</a>
+    <div class="toc-sep"></div>
+    <a href="#what">What is this?</a>
+    <a href="#files">Files</a>
+    <a href="#quickstart">Quick Start</a>
+    <a href="#html-usage">HTML Usage</a>
+    <a href="#php-usage">PHP Class Usage</a>
+    <a href="#colors">Colors</a>
+    <a href="#options">Options Reference</a>
+    <a href="#escape">Escape &amp; Newline</a>
+    <a href="#license">License</a>
+  </nav>
+
+  <main>
+
+    <!-- ═══════════════════════════════════════════════
+         NEW FEATURES
+    ═══════════════════════════════════════════════ -->
+    <div class="new-features" id="new-features">
+      <div class="new-features-header">
+        <i class="bi bi-stars" style="color:var(--orange);font-size:1.2rem"></i>
+        <h2>新增功能</h2>
+        <span class="version-tag">最新版本</span>
+      </div>
+      <div class="new-features-body">
+
+        <div class="feature-cards">
+          <div class="feat-card">
+            <div class="feat-card-name">auto-flip="ms"</div>
+            <div class="feat-card-desc">翻到背面後自動倒數翻回正面，底部顯示進度條。值為毫秒數。</div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-card-name">toggle</div>
+            <div class="feat-card-desc">布林屬性。翻到背面後點擊任意處即可翻回正面，背面顯示「↺ 點擊翻回」提示。</div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-card-name">flip-bar-color="name"</div>
+            <div class="feat-card-desc">單獨指定倒數進度條的顏色。若未設定，自動跟隨 color-after / color。</div>
+          </div>
+        </div>
+
+        <h3 style="margin-top:0;margin-bottom:14px;">使用方式</h3>
+
+        <pre><span class="hl-cmt">&lt;!-- ① auto-flip：3 秒後自動翻回 --&gt;</span>
+<span class="hl-tag">&lt;card-toggle</span>
+  <span class="hl-attr">content</span>=<span class="hl-val">"這是背面內容"</span>
+  <span class="hl-attr">auto-flip</span>=<span class="hl-val">"3000"</span>
+  <span class="hl-attr">color</span>=<span class="hl-val">"info"</span><span class="hl-tag">&gt;</span>
+  點我，3 秒後自動翻回
+<span class="hl-tag">&lt;/card-toggle&gt;</span>
+
+<span class="hl-cmt">&lt;!-- ② toggle：點擊背面可翻回 --&gt;</span>
+<span class="hl-tag">&lt;card-toggle</span>
+  <span class="hl-attr">content</span>=<span class="hl-val">"這是背面內容"</span>
+  <span class="hl-attr">toggle</span>
+  <span class="hl-attr">color</span>=<span class="hl-val">"lavender"</span><span class="hl-tag">&gt;</span>
+  點我切換，背面再點可翻回
+<span class="hl-tag">&lt;/card-toggle&gt;</span>
+
+<span class="hl-cmt">&lt;!-- ③ 同時使用：5 秒自動翻回，背面也可提前點擊翻回 --&gt;</span>
+<span class="hl-tag">&lt;card-toggle</span>
+  <span class="hl-attr">content</span>=<span class="hl-val">"背面內容"</span>
+  <span class="hl-attr">auto-flip</span>=<span class="hl-val">"5000"</span>
+  <span class="hl-attr">toggle</span>
+  <span class="hl-attr">color</span>=<span class="hl-val">"safe"</span><span class="hl-tag">&gt;</span>
+  5 秒自動翻回，或點背面提前翻回
+<span class="hl-tag">&lt;/card-toggle&gt;</span>
+
+<span class="hl-cmt">&lt;!-- ④ flip-bar-color：單獨指定進度條顏色 --&gt;</span>
+<span class="hl-tag">&lt;card-toggle</span>
+  <span class="hl-attr">content</span>=<span class="hl-val">"背面"</span>
+  <span class="hl-attr">auto-flip</span>=<span class="hl-val">"4000"</span>
+  <span class="hl-attr">color</span>=<span class="hl-val">"lavender"</span>
+  <span class="hl-attr">flip-bar-color</span>=<span class="hl-val">"warning"</span><span class="hl-tag">&gt;</span>
+  進度條顏色與卡片顏色不同
+<span class="hl-tag">&lt;/card-toggle&gt;</span></pre>
+
+        <h3 style="margin-bottom:12px;"><i class="bi bi-sort-down" style="color:var(--stone)"></i> flip-bar-color 優先順序</h3>
+        <div class="priority-chain">
+          <div class="priority-item">flip-bar-color</div>
+          <div class="priority-arrow">→</div>
+          <div class="priority-item">color-after</div>
+          <div class="priority-arrow">→</div>
+          <div class="priority-item">color</div>
+          <div class="priority-arrow">→</div>
+          <div class="priority-default">預設 sky</div>
+        </div>
+        <p style="color:var(--stone);font-size:.875rem;">
+          <code>flip-bar-color</code> 接受所有內建顏色名稱，也接受任意 CSS 色彩值（如 <code>#ff6600</code>、<code>rgb(255,100,0)</code>）。
+        </p>
+
+        <div class="callout callout-info">
+          <i class="bi bi-info-circle-fill"></i>
+          <div>
+            <code>auto-flip</code> 與 <code>toggle</code> 可單獨或同時使用。兩者並用時，倒數期間點擊背面可提前翻回，進度條同步停止。
+          </div>
+        </div>
+
+        <div class="callout callout-safe">
+          <i class="bi bi-shield-check-fill"></i>
+          <div>
+            快照機制已修正為 <strong>Lazy Snapshot</strong>：正面內容在第一次點擊前才記錄，確保所有瀏覽器（含 Firefox、Safari）子節點已完整解析，翻回正面後內容不會空白。
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         WHAT IS THIS
+    ═══════════════════════════════════════════════ -->
+    <div class="section" id="what">
+      <h2 class="section-title">What is this?</h2>
+      <p>
+        <strong style="color:var(--shell)">card-toggle</strong> 是一個 Web Component（<code>&lt;card-toggle&gt;</code>），可將靜態卡片轉為互動元件。支援三種模式：
+      </p>
+      <ul style="padding-left:22px;margin-bottom:14px;color:var(--stone);">
+        <li style="margin-bottom:6px;"><strong style="color:var(--shell)">Reveal</strong> — 點擊後替換為任意 HTML 內容</li>
+        <li style="margin-bottom:6px;"><strong style="color:var(--shell)">Quiz</strong> — 點擊後顯示答案輸入框，驗證後給予回饋</li>
+        <li style="margin-bottom:6px;"><strong style="color:var(--shell)">Group</strong> — 以 <code>&lt;card-toggle-group&gt;</code> 包覆多張卡片，支援堆疊或輪播導覽</li>
+      </ul>
+      <p>搭配的 <strong style="color:var(--shell)">CardToggle.php</strong> 可直接從 PHP 變數或資料庫查詢結果產生卡片標記，自動處理 ID 生成與 HTML 跳脫。</p>
+      <div class="callout callout-info">
+        <i class="bi bi-info-circle-fill"></i>
+        <div>需要 <a href="https://icons.getbootstrap.com/" style="color:var(--sky)">Bootstrap Icons</a> 提供測驗模式的按鈕圖示。針對桌機寬螢幕版面最佳化。</div>
+      </div>
+    </div>
+
+    <!-- FILES -->
+    <div class="section" id="files">
+      <h2 class="section-title">Files</h2>
+      <pre>your-project/
+├── <span class="hl-val">card-toggle.js</span>      ← Web Component（CSS 自動注入）
+├── <span class="hl-val">CardToggle.php</span>      ← PHP 渲染類別
+└── your-page.php       ← 你的頁面，require CardToggle.php</pre>
+    </div>
+
+    <!-- QUICK START -->
+    <div class="section" id="quickstart">
+      <h2 class="section-title">Quick Start</h2>
+      <pre><span class="hl-cmt">&lt;!-- Bootstrap Icons（測驗模式按鈕需要） --&gt;</span>
+<span class="hl-tag">&lt;link</span> <span class="hl-attr">rel</span>=<span class="hl-val">"stylesheet"</span>
+  <span class="hl-attr">href</span>=<span class="hl-val">"https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"</span><span class="hl-tag">&gt;</span>
+
+<span class="hl-cmt">&lt;!-- Reveal：點擊顯示內容 --&gt;</span>
+<span class="hl-tag">&lt;card-toggle</span> <span class="hl-attr">color</span>=<span class="hl-val">"info"</span> <span class="hl-attr">source</span>=<span class="hl-val">"detail-1"</span><span class="hl-tag">&gt;</span>
+  點擊查看詳情
+<span class="hl-tag">&lt;/card-toggle&gt;</span>
+
+<span class="hl-tag">&lt;div</span> <span class="hl-attr">id</span>=<span class="hl-val">"detail-1"</span> <span class="hl-attr">style</span>=<span class="hl-val">"display:none"</span><span class="hl-tag">&gt;</span>
+  &lt;p&gt;這是揭露後的內容，可以是任意 HTML。&lt;/p&gt;
+<span class="hl-tag">&lt;/div&gt;</span>
+
+<span class="hl-cmt">&lt;!-- 在 &lt;/body&gt; 前引入腳本 --&gt;</span>
+<span class="hl-tag">&lt;script</span> <span class="hl-attr">src</span>=<span class="hl-val">"card-toggle.js"</span><span class="hl-tag">&gt;&lt;/script&gt;</span></pre>
+
+      <pre><span class="hl-cmt">&lt;?php</span>
+require_once <span class="hl-str">'CardToggle.php'</span>;
+
+<span class="hl-cmt">// 從資料庫列揭露</span>
+echo CardToggle::revealArray(<span class="hl-str">'王大明　點擊展開'</span>, [
+    <span class="hl-str">'部門'</span> => $emp[<span class="hl-str">'dept'</span>],
+    <span class="hl-str">'職稱'</span> => $emp[<span class="hl-str">'title'</span>],
+    <span class="hl-str">'過敏'</span> => $emp[<span class="hl-str">'allergy'</span>],
+], [<span class="hl-str">'color'</span> => <span class="hl-str">'lavender'</span>]);
+
+<span class="hl-cmt">// 測驗模式</span>
+echo CardToggle::quiz(
+    <span class="hl-str">'阿斯匹靈最大單次劑量是多少 mg？'</span>,
+    $drug[<span class="hl-str">'max_single'</span>],
+    <span class="hl-str">'&lt;p&gt;正確！'</span> . $drug[<span class="hl-str">'dosage'</span>] . <span class="hl-str">'&lt;/p&gt;'</span>,
+    [<span class="hl-str">'color'</span> => <span class="hl-str">'warning'</span>, <span class="hl-str">'max_attempts'</span> => 3]
+);
+
+echo CardToggle::script(<span class="hl-str">'/assets/card-toggle.js'</span>);
+<span class="hl-tag">?&gt;</span></pre>
+    </div>
+
+    <!-- HTML USAGE -->
+    <div class="section" id="html-usage">
+      <h2 class="section-title">HTML Usage</h2>
+
+      <h3>Reveal mode</h3>
+      <p>三種提供內容的方式，每張卡片擇一使用。</p>
+
+      <p><strong style="color:var(--shell)">content 屬性</strong> — 內嵌 HTML 字串（適合短內容）：</p>
+      <pre><span class="hl-tag">&lt;card-toggle</span> <span class="hl-attr">color</span>=<span class="hl-val">"safe"</span> <span class="hl-attr">content</span>=<span class="hl-val">"這是說明文字，可含 &lt;b&gt;HTML&lt;/b&gt;"</span><span class="hl-tag">&gt;</span>
+  點擊查看
+<span class="hl-tag">&lt;/card-toggle&gt;</span></pre>
+
+      <p><strong style="color:var(--shell)">source 屬性</strong> — 指向隱藏元素（適合大型 HTML 區塊）：</p>
+      <pre><span class="hl-tag">&lt;card-toggle</span> <span class="hl-attr">color</span>=<span class="hl-val">"info"</span> <span class="hl-attr">source</span>=<span class="hl-val">"my-detail"</span> <span class="hl-attr">animation</span>=<span class="hl-val">"slide"</span><span class="hl-tag">&gt;</span>
+  點擊查看詳情
+<span class="hl-tag">&lt;/card-toggle&gt;</span>
+
+<span class="hl-tag">&lt;div</span> <span class="hl-attr">id</span>=<span class="hl-val">"my-detail"</span> <span class="hl-attr">style</span>=<span class="hl-val">"display:none"</span><span class="hl-tag">&gt;</span>
+  &lt;table&gt;...&lt;/table&gt;
+<span class="hl-tag">&lt;/div&gt;</span></pre>
+
+      <p><strong style="color:var(--shell)">無屬性</strong> — 卡片本體即為觸發器，適合群組內使用。</p>
+
+      <h3>Quiz mode</h3>
+      <p>加入 <code>question</code> 屬性啟用測驗模式，點擊後顯示輸入框，驗證答案並給予回饋。</p>
+      <pre><span class="hl-tag">&lt;card-toggle</span>
+  <span class="hl-attr">color</span>=<span class="hl-val">"warning"</span>
+  <span class="hl-attr">question</span>=<span class="hl-val">"阿斯匹靈最大單次劑量是多少 mg？"</span>
+  <span class="hl-attr">answer</span>=<span class="hl-val">"650"</span>
+  <span class="hl-attr">max-attempts</span>=<span class="hl-val">"3"</span>
+  <span class="hl-attr">hint</span>=<span class="hl-val">"介於 325 到 650 之間"</span>
+  <span class="hl-attr">hint-target</span>=<span class="hl-val">"hint-area"</span>
+  <span class="hl-attr">success-source</span>=<span class="hl-val">"aspirin-answer"</span>
+  <span class="hl-attr">success-color</span>=<span class="hl-val">"safe"</span>
+  <span class="hl-attr">auto-next</span><span class="hl-tag">&gt;</span>
+  阿斯匹靈最大單次劑量是多少 mg？
+<span class="hl-tag">&lt;/card-toggle&gt;</span>
+<span class="hl-tag">&lt;div</span> <span class="hl-attr">id</span>=<span class="hl-val">"aspirin-answer"</span> <span class="hl-attr">style</span>=<span class="hl-val">"display:none"</span><span class="hl-tag">&gt;</span>正確！325–650 mg，每 4–6 小時一次。<span class="hl-tag">&lt;/div&gt;</span>
+<span class="hl-tag">&lt;div</span> <span class="hl-attr">id</span>=<span class="hl-val">"hint-area"</span><span class="hl-tag">&gt;&lt;/div&gt;</span></pre>
+
+      <h3>Group</h3>
+      <p>以 <code>&lt;card-toggle-group&gt;</code> 包覆多張卡片，支援堆疊或輪播。</p>
+      <pre><span class="hl-cmt">&lt;!-- Stack 模式（預設）--&gt;</span>
+<span class="hl-tag">&lt;card-toggle-group</span> <span class="hl-attr">mode</span>=<span class="hl-val">"stack"</span> <span class="hl-attr">theme</span>=<span class="hl-val">"sky"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;card-toggle</span> <span class="hl-attr">color</span>=<span class="hl-val">"sky"</span>  <span class="hl-attr">source</span>=<span class="hl-val">"step-1"</span><span class="hl-tag">&gt;</span>Step 1<span class="hl-tag">&lt;/card-toggle&gt;</span>
+  <span class="hl-tag">&lt;card-toggle</span> <span class="hl-attr">color</span>=<span class="hl-val">"info"</span> <span class="hl-attr">source</span>=<span class="hl-val">"step-2"</span><span class="hl-tag">&gt;</span>Step 2<span class="hl-tag">&lt;/card-toggle&gt;</span>
+<span class="hl-tag">&lt;/card-toggle-group&gt;</span>
+
+<span class="hl-cmt">&lt;!-- Slide 模式 --&gt;</span>
+<span class="hl-tag">&lt;card-toggle-group</span> <span class="hl-attr">mode</span>=<span class="hl-val">"slide"</span> <span class="hl-attr">theme</span>=<span class="hl-val">"warning"</span> <span class="hl-attr">show-pages</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;card-toggle</span> <span class="hl-attr">color</span>=<span class="hl-val">"warning"</span> <span class="hl-attr">question</span>=<span class="hl-val">"題目一"</span> <span class="hl-attr">answer</span>=<span class="hl-val">"A"</span><span class="hl-tag">&gt;</span>題目一<span class="hl-tag">&lt;/card-toggle&gt;</span>
+  <span class="hl-tag">&lt;card-toggle</span> <span class="hl-attr">color</span>=<span class="hl-val">"warning"</span> <span class="hl-attr">question</span>=<span class="hl-val">"題目二"</span> <span class="hl-attr">answer</span>=<span class="hl-val">"B"</span><span class="hl-tag">&gt;</span>題目二<span class="hl-tag">&lt;/card-toggle&gt;</span>
+<span class="hl-tag">&lt;/card-toggle-group&gt;</span></pre>
+    </div>
+
+    <!-- PHP USAGE -->
+    <div class="section" id="php-usage">
+      <h2 class="section-title">PHP Class Usage</h2>
+
+      <h3>CardToggle::reveal()</h3>
+      <p>揭露模式，HTML 內容自行組裝。<code>escape</code> 預設 <code>false</code>。</p>
+      <pre>echo CardToggle::reveal(
+    <span class="hl-str">'點擊查看診斷結果'</span>,
+    <span class="hl-str">'&lt;table&gt;...'</span> . nl2br(htmlspecialchars($row[<span class="hl-str">'note'</span>], ENT_QUOTES, <span class="hl-str">'UTF-8'</span>)) . <span class="hl-str">'&lt;/table&gt;'</span>,
+    [<span class="hl-str">'color'</span> => <span class="hl-str">'info'</span>, <span class="hl-str">'animation'</span> => <span class="hl-str">'slide'</span>]
+);</pre>
+
+      <h3>CardToggle::revealText()</h3>
+      <p>純文字資料庫欄位揭露。<code>escape</code> 強制 <code>true</code>，<code>htmlspecialchars</code> + <code>nl2br</code> 自動套用。</p>
+      <pre>echo CardToggle::revealText(
+    <span class="hl-str">'Step 1 確認病患身分　點擊展開'</span>,
+    $sop[<span class="hl-str">'description'</span>],
+    [<span class="hl-str">'color'</span> => <span class="hl-str">'sky'</span>, <span class="hl-str">'number'</span> => 1, <span class="hl-str">'animation'</span> => <span class="hl-str">'slide'</span>]
+);</pre>
+
+      <h3>CardToggle::revealArray()</h3>
+      <p>直接傳入資料庫列，key 成為標籤，value 自動跳脫，輸出定義清單版面。</p>
+      <pre>echo CardToggle::revealArray(
+    <span class="hl-str">'王大明　點擊展開'</span>,
+    [
+        <span class="hl-str">'部門'</span>     => $emp[<span class="hl-str">'dept'</span>],
+        <span class="hl-str">'職稱'</span>     => $emp[<span class="hl-str">'title'</span>],
+        <span class="hl-str">'藥物過敏'</span> => $emp[<span class="hl-str">'allergy'</span>],
+    ],
+    [<span class="hl-str">'color'</span> => <span class="hl-str">'lavender'</span>, <span class="hl-str">'animation'</span> => <span class="hl-str">'fade'</span>]
+);</pre>
+
+      <h3>CardToggle::quiz()</h3>
+      <pre>echo CardToggle::quiz(
+    $drug[<span class="hl-str">'name'</span>] . <span class="hl-str">' 的最大單次劑量是多少 mg？'</span>,
+    $drug[<span class="hl-str">'max_single'</span>],
+    <span class="hl-str">'&lt;p&gt;正確！'</span> . htmlspecialchars($drug[<span class="hl-str">'dosage'</span>], ENT_QUOTES, <span class="hl-str">'UTF-8'</span>) . <span class="hl-str">'&lt;/p&gt;'</span>,
+    [
+        <span class="hl-str">'color'</span>         => <span class="hl-str">'warning'</span>,
+        <span class="hl-str">'max_attempts'</span>  => 3,
+        <span class="hl-str">'placeholder'</span>   => <span class="hl-str">'輸入數字（mg）'</span>,
+        <span class="hl-str">'hint'</span>          => $drug[<span class="hl-str">'dosage'</span>],
+        <span class="hl-str">'hint_target'</span>   => <span class="hl-str">'quiz-hint-area'</span>,
+        <span class="hl-str">'error_message'</span> => <span class="hl-str">'答案不正確，請再想想'</span>,
+        <span class="hl-str">'success_color'</span> => <span class="hl-str">'safe'</span>,
+        <span class="hl-str">'auto_next'</span>     => true,
+    ]
+);</pre>
+
+      <h3>CardToggle::groupOpen() / groupClose()</h3>
+      <pre>echo CardToggle::groupOpen([
+    <span class="hl-str">'mode'</span>       => <span class="hl-str">'slide'</span>,
+    <span class="hl-str">'theme'</span>      => <span class="hl-str">'warning'</span>,
+    <span class="hl-str">'show_pages'</span> => true,
+]);
+foreach ($questions as $q) {
+    echo CardToggle::quiz($q[<span class="hl-str">'question'</span>], $q[<span class="hl-str">'answer'</span>], <span class="hl-str">''</span>, [
+        <span class="hl-str">'color'</span>    => <span class="hl-str">'warning'</span>,
+        <span class="hl-str">'auto_next'</span> => true,
+    ]);
+}
+echo CardToggle::groupClose();
+
+<span class="hl-cmt">// 在 &lt;/body&gt; 前輸出 script tag（多次呼叫只輸出一次）</span>
+echo CardToggle::script(<span class="hl-str">'/assets/card-toggle.js'</span>);</pre>
+    </div>
+
+    <!-- COLORS -->
+    <div class="section" id="colors">
+      <h2 class="section-title">Colors</h2>
+      <p>透過 <code>color</code> 屬性（HTML）或 <code>'color'</code> 選項（PHP）設定。同樣適用於 <code>color-after</code>、<code>success-color</code>、<code>flip-bar-color</code>。</p>
+      <div class="color-grid">
+        <div class="color-chip"><div class="chip-dot" style="background:#40c99a"></div><code>safe</code> <span style="color:var(--stone);font-size:.78rem">#40c99a</span></div>
+        <div class="color-chip"><div class="chip-dot" style="background:#F08080"></div><code>warning</code> <span style="color:var(--stone);font-size:.78rem">#F08080</span></div>
+        <div class="color-chip"><div class="chip-dot" style="background:#5fafed"></div><code>info</code> <span style="color:var(--stone);font-size:.78rem">#5fafed</span></div>
+        <div class="color-chip"><div class="chip-dot" style="background:#C8DD5A"></div><code>special</code> <span style="color:var(--stone);font-size:.78rem">#C8DD5A</span></div>
+        <div class="color-chip"><div class="chip-dot" style="background:#08a9d1"></div><code>sky</code> <span style="color:var(--stone);font-size:.78rem">#08a9d1</span></div>
+        <div class="color-chip"><div class="chip-dot" style="background:#C3A5E5"></div><code>lavender</code> <span style="color:var(--stone);font-size:.78rem">#C3A5E5</span></div>
+        <div class="color-chip"><div class="chip-dot" style="background:#DECA4B"></div><code>attention</code> <span style="color:var(--stone);font-size:.78rem">#DECA4B</span></div>
+        <div class="color-chip"><div class="chip-dot" style="background:#E5C3B3"></div><code>salmon</code> <span style="color:var(--stone);font-size:.78rem">#E5C3B3</span></div>
+        <div class="color-chip"><div class="chip-dot" style="background:#FFB3D9"></div><code>pink</code> <span style="color:var(--stone);font-size:.78rem">#FFB3D9</span></div>
+        <div class="color-chip"><div class="chip-dot" style="background:#eda109"></div><code>orange</code> <span style="color:var(--stone);font-size:.78rem">#eda109</span></div>
+        <div class="color-chip"><div class="chip-dot" style="background:#7090A8"></div><code>stone</code> <span style="color:var(--stone);font-size:.78rem">#7090A8</span></div>
+        <div class="color-chip"><div class="chip-dot" style="background:#d9c5b2"></div><code>brown</code> <span style="color:var(--stone);font-size:.78rem">#d9c5b2</span></div>
+        <div class="color-chip"><div class="chip-dot" style="background:#c6c7bd"></div><code>shell</code> <span style="color:var(--stone);font-size:.78rem">#c6c7bd</span></div>
+      </div>
+      <p style="color:var(--stone);font-size:.875rem;">加上 <code>dashed</code> 屬性（或 PHP <code>'dashed' => true</code>）可切換為帶色彩的虛線邊框。</p>
+    </div>
+
+    <!-- OPTIONS -->
+    <div class="section" id="options">
+      <h2 class="section-title">Options Reference</h2>
+
+      <h3>&lt;card-toggle&gt; 屬性</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Attribute</th><th>Values</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>source</code></td><td>element id</td><td>—</td><td>從隱藏元素複製內容</td></tr>
+            <tr><td><code>content</code></td><td>HTML string</td><td>—</td><td>內嵌內容字串</td></tr>
+            <tr><td><code>question</code></td><td>string</td><td>—</td><td>啟用測驗模式，顯示為提示文字</td></tr>
+            <tr><td><code>answer</code></td><td>string</td><td>—</td><td>測驗模式的正確答案</td></tr>
+            <tr><td><code>color</code></td><td>color name</td><td>—</td><td>左側強調線顏色</td></tr>
+            <tr><td><code>color-after</code></td><td>color name</td><td>—</td><td>揭露後的左側強調線顏色</td></tr>
+            <tr><td><code>dashed</code></td><td>boolean attr</td><td>—</td><td>虛線邊框，顏色跟隨 color</td></tr>
+            <tr><td><code>size</code></td><td>xsm sm lg xlg</td><td>—</td><td>卡片 padding 與字體大小</td></tr>
+            <tr><td><code>animation</code></td><td>fade slide none</td><td>fade</td><td>揭露過渡動畫</td></tr>
+            <tr><td><code>number</code></td><td>string/int</td><td>—</td><td>左上角序號標籤</td></tr>
+            <tr><td><code>number-size</code></td><td>CSS value</td><td>0.8rem</td><td>序號字體大小</td></tr>
+            <tr><td><code>case-sensitive</code></td><td>boolean attr</td><td>—</td><td>答案區分大小寫</td></tr>
+            <tr><td><code>max-attempts</code></td><td>int</td><td>999</td><td>最多錯誤次數</td></tr>
+            <tr><td><code>placeholder</code></td><td>string</td><td>請輸入答案</td><td>輸入框 placeholder</td></tr>
+            <tr><td><code>hint</code></td><td>string</td><td>—</td><td>提示文字內容</td></tr>
+            <tr><td><code>hint-target</code></td><td>element id</td><td>—</td><td>提示顯示的目標元素</td></tr>
+            <tr><td><code>submit-text</code></td><td>string</td><td>提交答案</td><td>提交按鈕文字</td></tr>
+            <tr><td><code>hint-text</code></td><td>string</td><td>提示</td><td>提示按鈕文字</td></tr>
+            <tr><td><code>reset-text</code></td><td>string</td><td>重置</td><td>重置按鈕文字</td></tr>
+            <tr><td><code>hide-submit</code></td><td>boolean attr</td><td>—</td><td>隱藏提交按鈕</td></tr>
+            <tr><td><code>hide-hint</code></td><td>boolean attr</td><td>—</td><td>隱藏提示按鈕</td></tr>
+            <tr><td><code>hide-reset</code></td><td>boolean attr</td><td>—</td><td>隱藏重置按鈕</td></tr>
+            <tr><td><code>success-message</code></td><td>string</td><td>答對了！</td><td>答對後顯示文字（無 success-source 時）</td></tr>
+            <tr><td><code>error-message</code></td><td>string</td><td>答錯了，請再試一次</td><td>答錯時顯示文字</td></tr>
+            <tr><td><code>success-source</code></td><td>element id</td><td>—</td><td>答對後複製顯示的元素</td></tr>
+            <tr><td><code>success-color</code></td><td>color name</td><td>safe</td><td>答對後的強調線顏色</td></tr>
+            <tr><td><code>auto-next</code></td><td>boolean attr</td><td>—</td><td>答對後自動跳到群組下一張</td></tr>
+            <tr class="td-new">
+              <td><code>auto-flip</code></td><td>ms（毫秒）</td><td>—</td>
+              <td>🆕 翻到背面後自動倒數翻回，底部顯示進度條</td>
+            </tr>
+            <tr class="td-new">
+              <td><code>toggle</code></td><td>boolean attr</td><td>—</td>
+              <td>🆕 翻到背面後可點擊翻回正面</td>
+            </tr>
+            <tr class="td-new">
+              <td><code>flip-bar-color</code></td><td>color name / CSS 值</td><td>auto</td>
+              <td>🆕 倒數進度條顏色，預設跟隨 color-after → color → sky</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>&lt;card-toggle-group&gt; 屬性</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Attribute</th><th>Values</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>mode</code></td><td>stack slide</td><td>stack</td><td>版面模式</td></tr>
+            <tr><td><code>theme</code></td><td>color name</td><td>special</td><td>導覽按鈕的作用中顏色</td></tr>
+            <tr><td><code>show-pages</code></td><td>boolean attr</td><td>—</td><td>顯示頁碼按鈕</td></tr>
+            <tr><td><code>hide-nav-buttons</code></td><td>boolean attr</td><td>—</td><td>隱藏上下頁按鈕</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>PHP $options 陣列鍵值</h3>
+      <p style="color:var(--stone);font-size:.875rem;margin-bottom:12px;">PHP 選項鍵名使用底線，對應 HTML 屬性使用連字號。</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Key</th><th>HTML 對應</th><th>Type</th><th>Default</th></tr></thead>
+          <tbody>
+            <tr><td><code>color</code></td><td><code>color</code></td><td>string</td><td>—</td></tr>
+            <tr><td><code>color_after</code></td><td><code>color-after</code></td><td>string</td><td>—</td></tr>
+            <tr><td><code>dashed</code></td><td><code>dashed</code></td><td>bool</td><td>false</td></tr>
+            <tr><td><code>size</code></td><td><code>size</code></td><td>string</td><td>—</td></tr>
+            <tr><td><code>animation</code></td><td><code>animation</code></td><td>string</td><td>fade</td></tr>
+            <tr><td><code>number</code></td><td><code>number</code></td><td>int/string</td><td>—</td></tr>
+            <tr><td><code>number_size</code></td><td><code>number-size</code></td><td>string</td><td>—</td></tr>
+            <tr><td><code>answer</code></td><td><code>answer</code></td><td>string</td><td>—</td></tr>
+            <tr><td><code>case_sensitive</code></td><td><code>case-sensitive</code></td><td>bool</td><td>false</td></tr>
+            <tr><td><code>max_attempts</code></td><td><code>max-attempts</code></td><td>int</td><td>999</td></tr>
+            <tr><td><code>placeholder</code></td><td><code>placeholder</code></td><td>string</td><td>—</td></tr>
+            <tr><td><code>hint</code></td><td><code>hint</code></td><td>string</td><td>—</td></tr>
+            <tr><td><code>hint_target</code></td><td><code>hint-target</code></td><td>string</td><td>—</td></tr>
+            <tr><td><code>submit_text</code></td><td><code>submit-text</code></td><td>string</td><td>—</td></tr>
+            <tr><td><code>hint_text</code></td><td><code>hint-text</code></td><td>string</td><td>—</td></tr>
+            <tr><td><code>reset_text</code></td><td><code>reset-text</code></td><td>string</td><td>—</td></tr>
+            <tr><td><code>hide_submit</code></td><td><code>hide-submit</code></td><td>bool</td><td>false</td></tr>
+            <tr><td><code>hide_hint</code></td><td><code>hide-hint</code></td><td>bool</td><td>false</td></tr>
+            <tr><td><code>hide_reset</code></td><td><code>hide-reset</code></td><td>bool</td><td>false</td></tr>
+            <tr><td><code>success_message</code></td><td><code>success-message</code></td><td>string</td><td>—</td></tr>
+            <tr><td><code>error_message</code></td><td><code>error-message</code></td><td>string</td><td>—</td></tr>
+            <tr><td><code>success_source</code></td><td><code>success-source</code></td><td>string</td><td>auto</td></tr>
+            <tr><td><code>success_color</code></td><td><code>success-color</code></td><td>string</td><td>safe</td></tr>
+            <tr><td><code>auto_next</code></td><td><code>auto-next</code></td><td>bool</td><td>false</td></tr>
+            <tr><td><code>escape</code></td><td>—</td><td>bool</td><td>method-dependent</td></tr>
+            <tr><td><code>class</code></td><td><code>class</code></td><td>string</td><td>—</td></tr>
+            <tr class="td-new"><td><code>auto_flip</code></td><td><code>auto-flip</code></td><td>int (ms)</td><td>—</td></tr>
+            <tr class="td-new"><td><code>toggle</code></td><td><code>toggle</code></td><td>bool</td><td>false</td></tr>
+            <tr class="td-new"><td><code>flip_bar_color</code></td><td><code>flip-bar-color</code></td><td>string</td><td>auto</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ESCAPE -->
+    <div class="section" id="escape">
+      <h2 class="section-title">Escape &amp; Newline Handling</h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Method</th><th>escape 預設</th><th>\n → &lt;br&gt;</th><th>適用時機</th></tr></thead>
+          <tbody>
+            <tr><td><code>reveal()</code></td><td>false</td><td>手動</td><td>自行組裝 HTML</td></tr>
+            <tr><td><code>revealText()</code></td><td>true（強制）</td><td>✅ 自動</td><td>純文字資料庫欄位</td></tr>
+            <tr><td><code>revealArray()</code></td><td>true（強制）</td><td>✅ 自動</td><td>直接傾倒資料庫列</td></tr>
+            <tr><td><code>quiz()</code></td><td>false</td><td>手動</td><td>問題與成功內容來自資料庫</td></tr>
+            <tr><td><code>card()</code></td><td>false</td><td>手動</td><td>純展示靜態卡片</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout callout-warn">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <div>
+          使用 <code>reveal()</code>、<code>quiz()</code>、<code>card()</code> 自行組裝 HTML 時，務必對不可信欄位進行跳脫：<br>
+          <code>htmlspecialchars($value, ENT_QUOTES, 'UTF-8')</code><br>
+          含換行：<code>nl2br(htmlspecialchars($value, ENT_QUOTES, 'UTF-8'))</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- LICENSE -->
+    <div class="section" id="license">
+      <h2 class="section-title">License</h2>
+      <p>MIT License — 可自由用於個人與商業專案的使用、修改與散佈。</p>
+    </div>
+
+  </main>
+</div>
+
+</body>
+</html>
